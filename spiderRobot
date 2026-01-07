@@ -1,0 +1,765 @@
+# 🕷️ AI Robot Spider Control System
+
+<div align="center">
+  
+  ### Intelligent Hexapod Robot with Remote Control & Computer Vision
+  
+  [![Python](https://img.shields.io/badge/Python-3.13-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+  [![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+  [![Raspberry Pi](https://img.shields.io/badge/Raspberry_Pi_5-A22846?style=for-the-badge&logo=raspberry-pi&logoColor=white)](https://www.raspberrypi.org/)
+  [![PyQt5](https://img.shields.io/badge/PyQt5-41CD52?style=for-the-badge&logo=qt&logoColor=white)](https://www.riverbankcomputing.com/software/pyqt/)
+  [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
+</div>
+
+<div align="center">
+  <img src="docs/images/robot_demo.gif" alt="Robot Demo" width="600">
+</div>
+
+---
+
+## 📖 Table of Contents
+
+- [About](#-about)
+- [Features](#-features)
+- [System Architecture](#-system-architecture)
+- [Hardware](#-hardware)
+- [Tech Stack](#-tech-stack)
+- [Project Structure](#-project-structure)
+- [Installation](#-installation)
+- [Usage](#-usage)
+- [API Documentation](#-api-documentation)
+- [Themes](#-themes)
+- [Roadmap](#-roadmap)
+- [Contributing](#-contributing)
+- [License](#-license)
+- [Contact](#-contact)
+
+---
+
+## 🎯 About
+
+The **AI Robot Spider Control System** is a sophisticated hexapod robot control platform built on the Freenove Big Hexapod Robot Kit. This project features a distributed architecture with a Windows GUI client and a Raspberry Pi-based robot controller, connected via REST API and WebSockets for real-time control and video streaming.
+
+### 🌟 Why This Project?
+
+- **Educational:** Learn robotics, computer vision, and distributed systems
+- **Modular:** Clean separation between client and robot control
+- **Extensible:** Built on Freenove base with custom enhancements
+- **Real-time:** Live camera feed and responsive controls
+- **Professional:** Production-ready code with proper architecture
+
+---
+
+## ✨ Features
+
+### 🎮 Robot Control
+- ✅ **18 Servo Motors** - Precise control of 6 legs (3 servos per leg)
+- ✅ **Multiple Movement Modes:**
+  - Forward/Backward walking
+  - Left/Right turning
+  - Sideways movement (crab walk)
+  - Rotation in place
+  - Custom gaits and patterns
+- ✅ **Speed Control** - Adjustable movement speed
+- ✅ **Emergency Stop** - Instant halt functionality
+- ✅ **Servo Calibration** - Fine-tune individual servo positions
+
+### 📹 Computer Vision
+- ✅ **Live Camera Feed** - Real-time video streaming from robot
+- ✅ **HD Quality** - 1080p video capture
+- ✅ **Low Latency** - Optimized streaming for responsive control
+- 🔄 **Object Detection** (Planned) - AI-powered object recognition
+- 🔄 **Autonomous Navigation** (Planned) - Self-driving capabilities
+
+### 🖥️ Windows Client (PyQt5)
+- ✅ **Modern GUI** - Beautiful, responsive interface
+- ✅ **6 Custom Themes:**
+  - VS Code Dark (default)
+  - Dark Spider (classic black/purple)
+  - Toxic Spider (neon green)
+  - Halloween Spider (orange/black)
+  - Blood Spider (red/black)
+  - Caution Spider (yellow/black)
+- ✅ **Real-time Controls** - Keyboard and button controls
+- ✅ **Status Monitoring** - Connection status, battery level, servo states
+- ✅ **Camera View** - Live video feed display
+- ✅ **Settings Panel** - Customize robot behavior
+
+### 🌐 Backend API (FastAPI)
+- ✅ **REST API** - Clean, documented endpoints
+- ✅ **WebSocket Support** - Real-time bidirectional communication
+- ✅ **Auto Documentation** - Swagger UI and ReDoc
+- ✅ **Error Handling** - Robust error management
+- ✅ **CORS Support** - Cross-origin requests enabled
+- ✅ **Health Checks** - System status monitoring
+
+---
+
+## 🏗️ System Architecture
+
+### **Distributed Architecture**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Windows Laptop (10.0.0.x)                │
+│                                                               │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │         iRobotSpiderAppver2 (PyQt5 Client)          │   │
+│  │                                                       │   │
+│  │  ┌──────────┐  ┌──────────┐  ┌──────────────────┐  │   │
+│  │  │  Camera  │  │ Control  │  │  Theme Selector  │  │   │
+│  │  │   View   │  │  Panel   │  │   (6 themes)     │  │   │
+│  │  └──────────┘  └──────────┘  └──────────────────┘  │   │
+│  │                                                       │   │
+│  │  ┌────────────────────────────────────────────────┐ │   │
+│  │  │     HTTP/WebSocket Client (requests)           │ │   │
+│  │  └────────────────────────────────────────────────┘ │   │
+│  └─────────────────────────────────────────────────────┘   │
+└───────────────────────────┬─────────────────────────────────┘
+                            │
+                            │ HTTP/WebSocket
+                            │ (10.0.0.65:5000)
+                            │
+┌───────────────────────────▼─────────────────────────────────┐
+│              Raspberry Pi 5 (10.0.0.65)                     │
+│                                                               │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │      iSpiderPiRobot (FastAPI Server)                │   │
+│  │                                                       │   │
+│  │  ┌────────────────────────────────────────────────┐ │   │
+│  │  │         FastAPI REST API + WebSocket           │ │   │
+│  │  │  • /api/move      • /api/camera                │ │   │
+│  │  │  • /api/status    • /ws/control                │ │   │
+│  │  └────────────────────────────────────────────────┘ │   │
+│  │                                                       │   │
+│  │  ┌────────────────────────────────────────────────┐ │   │
+│  │  │         Robot Control Layer                    │ │   │
+│  │  │  • Freenove Base Code (servo control)          │ │   │
+│  │  │  • Custom Enhancements (advanced movements)    │ │   │
+│  │  └────────────────────────────────────────────────┘ │   │
+│  │                                                       │   │
+│  │  ┌────────────────────────────────────────────────┐ │   │
+│  │  │         Hardware Interface                     │ │   │
+│  │  │  • PCA9685 PWM Driver (servo control)          │ │   │
+│  │  │  • RPi.GPIO (GPIO control)                     │ │   │
+│  │  │  • Camera Module (video capture)               │ │   │
+│  │  └────────────────────────────────────────────────┘ │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                                                               │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │              Physical Robot Hardware                │   │
+│  │                                                       │   │
+│  │    🕷️ 6 Legs × 3 Servos = 18 Servo Motors          │   │
+│  │    📹 Camera Module (1080p)                         │   │
+│  │    🔋 Battery Pack (7.4V LiPo)                      │   │
+│  │    🧠 Raspberry Pi 5 (Brain)                        │   │
+│  └─────────────────────────────────────────────────────┘   │
+└───────────────────────────────────────────────────────────────┘
+```
+
+### **Communication Flow**
+
+```
+User Input (Keyboard/Button)
+        ↓
+PyQt5 GUI (Windows Client)
+        ↓
+HTTP Request / WebSocket Message
+        ↓
+FastAPI Server (Raspberry Pi)
+        ↓
+Robot Control Logic
+        ↓
+Freenove Base Code
+        ↓
+PCA9685 PWM Driver
+        ↓
+18 Servo Motors
+        ↓
+Robot Movement! 🕷️
+```
+
+---
+
+## 🔧 Hardware
+
+### **Components**
+
+| Component | Specification | Purpose |
+|-----------|--------------|---------|
+| **Raspberry Pi 5** | 4GB RAM, Debian Trixie | Main controller |
+| **Freenove Hexapod Kit** | 18 servo motors | Robot chassis & actuators |
+| **PCA9685** | 16-channel PWM driver | Servo control |
+| **Camera Module** | 1080p, CSI interface | Video streaming |
+| **Battery** | 7.4V 2S LiPo, 2200mAh | Power supply |
+| **Servo Motors** | MG90S, 180° rotation | Leg movement |
+
+### **Wiring Diagram**
+
+```
+Raspberry Pi 5
+    ├── I2C (SDA/SCL) ──→ PCA9685 (Servo Driver)
+    │                      ├── Channel 0-2  → Leg 1 (Hip, Knee, Ankle)
+    │                      ├── Channel 3-5  → Leg 2
+    │                      ├── Channel 6-8  → Leg 3
+    │                      ├── Channel 9-11 → Leg 4
+    │                      ├── Channel 12-14 → Leg 5
+    │                      └── Channel 15-17 → Leg 6
+    │
+    ├── CSI Port ──→ Camera Module
+    │
+    ├── GPIO ──→ LEDs, Sensors (future)
+    │
+    └── Power ──→ 5V from Battery (via regulator)
+```
+
+---
+
+## 🛠️ Tech Stack
+
+### **Client (Windows)**
+- **Language:** Python 3.11+
+- **GUI Framework:** PyQt5
+- **HTTP Client:** requests
+- **WebSocket:** websockets
+- **Image Processing:** OpenCV, Pillow
+- **Styling:** Custom QSS (6 themes)
+
+### **Server (Raspberry Pi)**
+- **Language:** Python 3.13.5
+- **Web Framework:** FastAPI 0.104+
+- **ASGI Server:** uvicorn
+- **Hardware Control:**
+  - RPi.GPIO (GPIO control)
+  - adafruit-circuitpython-pca9685 (PWM)
+  - adafruit-circuitpython-servokit (Servo)
+- **Computer Vision:** OpenCV, picamera2
+- **Base Code:** Freenove Hexapod Kit
+
+### **Communication**
+- **Protocol:** HTTP/REST + WebSockets
+- **Data Format:** JSON
+- **Video Streaming:** MJPEG over HTTP
+- **Network:** Local WiFi (10.0.0.x)
+
+---
+
+## 📂 Project Structure
+
+```
+ai_robotSpiderApp/
+│
+├── iRobotSpiderAppver2/          # Windows Client Application
+│   ├── main.py                   # Entry point
+│   ├── ui/
+│   │   ├── main_window.py        # Main GUI window
+│   │   ├── control_panel.py      # Robot controls
+│   │   ├── camera_view.py        # Video display
+│   │   └── settings_dialog.py    # Settings UI
+│   │
+│   ├── services/
+│   │   ├── robot_service.py      # Robot API client
+│   │   ├── camera_service.py     # Video streaming
+│   │   └── connection.py         # Connection manager
+│   │
+│   ├── styles/
+│   │   └── styles.py             # 6 custom themes
+│   │
+│   ├── utils/
+│   │   ├── logger.py             # Logging utility
+│   │   └── config.py             # Configuration
+│   │
+│   ├── venv/                     # Virtual environment
+│   └── requirements.txt          # Dependencies
+│
+├── iSpiderPiRobot/               # Raspberry Pi Robot Control
+│   ├── main.py                   # FastAPI server
+│   │
+│   ├── api/
+│   │   ├── routes.py             # API endpoints
+│   │   ├── websocket.py          # WebSocket handlers
+│   │   └── models.py             # Request/Response models
+│   │
+│   ├── freenove/                 # Freenove Base Code
+│   │   ├── Code/
+│   │   │   ├── Server/
+│   │   │   │   ├── Servo.py      # Servo control
+│   │   │   │   ├── ADC.py        # Analog input
+│   │   │   │   └── Motor.py      # Motor control
+│   │   │   │
+│   │   │   └── Client/           # Original client (unused)
+│   │   │
+│   │   └── Libs/                 # Libraries
+│   │
+│   ├── enhancements/             # Custom Enhancements
+│   │   ├── advanced_movements.py # Custom gaits
+│   │   ├── calibration.py        # Servo calibration
+│   │   └── sensors.py            # Sensor integration
+│   │
+│   ├── camera/
+│   │   ├── camera_manager.py     # Camera control
+│   │   └── stream.py             # Video streaming
+│   │
+│   ├── venv/                     # Virtual environment
+│   └── requirements_pi.txt       # Pi dependencies
+│
+├── docs/
+│   ├── API.md                    # API documentation
+│   ├── SETUP.md                  # Setup guide
+│   ├── HARDWARE.md               # Hardware guide
+│   └── images/                   # Screenshots, diagrams
+│
+├── README.md                     # This file
+├── LICENSE                       # MIT License
+└── .gitignore                    # Git ignore rules
+```
+
+---
+
+## 🚀 Installation
+
+### **Prerequisites**
+
+#### Windows Client:
+- Python 3.11 or higher
+- Windows 10/11
+- 4GB RAM minimum
+- Network connection to Raspberry Pi
+
+#### Raspberry Pi:
+- Raspberry Pi 5 (4GB recommended)
+- Debian Trixie (or Bookworm)
+- Python 3.13.5
+- Freenove Hexapod Robot Kit assembled
+- Camera module connected
+- Same network as Windows client
+
+---
+
+### **1️⃣ Raspberry Pi Setup**
+
+#### **A. Clone Repository**
+```bash
+# SSH into Raspberry Pi
+ssh Richipi@10.0.0.65
+
+# Clone repository
+cd ~
+git clone https://github.com/RichiebM3/ai_robotSpiderApp.git
+cd ai_robotSpiderApp/iSpiderPiRobot
+```
+
+#### **B. Install System Dependencies**
+```bash
+# Update system
+sudo apt update && sudo apt upgrade -y
+
+# Install Python 3.13 (if not already installed)
+sudo apt install python3.13 python3.13-venv python3-pip -y
+
+# Install I2C tools
+sudo apt install i2c-tools -y
+
+# Enable I2C interface
+sudo raspi-config
+# Navigate to: Interface Options → I2C → Enable
+
+# Install camera dependencies
+sudo apt install python3-picamera2 -y
+
+# Reboot
+sudo reboot
+```
+
+#### **C. Create Virtual Environment**
+```bash
+cd ~/ai_robotSpiderApp/iSpiderPiRobot
+
+# Create venv
+python3 -m venv venv
+
+# Activate venv
+source venv/bin/activate
+
+# Upgrade pip
+pip install --upgrade pip setuptools wheel
+```
+
+#### **D. Install Python Dependencies**
+```bash
+# Install from requirements
+pip install -r requirements_pi.txt
+```
+
+**requirements_pi.txt:**
+```txt
+# FastAPI Backend Server
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+python-multipart>=0.0.6
+websockets>=12.0
+
+# Robot Control
+RPi.GPIO>=0.7.1
+adafruit-circuitpython-pca9685>=3.4.0
+adafruit-circuitpython-servokit>=1.3.0
+
+# Computer Vision
+opencv-python>=4.8.0
+picamera2>=0.3.0
+numpy>=1.24.0
+Pillow>=10.0.0
+
+# Utilities
+requests>=2.31.0
+pyyaml>=6.0
+```
+
+#### **E. Test Hardware**
+```bash
+# Test I2C connection
+sudo i2cdetect -y 1
+# Should show device at address 0x40 (PCA9685)
+
+# Test camera
+libcamera-hello
+# Should show camera preview
+
+# Test servos (careful - robot will move!)
+python3 test_servos.py
+```
+
+#### **F. Start FastAPI Server**
+```bash
+# Start server
+uvicorn main:app --host 0.0.0.0 --port 5000 --reload
+
+# Or use the startup script
+./start_server.sh
+```
+
+**Server should start at:** `http://10.0.0.65:5000`
+
+---
+
+### **2️⃣ Windows Client Setup**
+
+#### **A. Clone Repository**
+```bash
+# Open PowerShell or Command Prompt
+cd C:\Users\YourUsername\Documents
+
+# Clone repository
+git clone https://github.com/RichiebM3/ai_robotSpiderApp.git
+cd ai_robotSpiderApp\iRobotSpiderAppver2
+```
+
+#### **B. Create Virtual Environment**
+```bash
+# Create venv
+python -m venv venv
+
+# Activate venv (PowerShell)
+.\venv\Scripts\Activate.ps1
+
+# Or (Command Prompt)
+.\venv\Scripts\activate.bat
+```
+
+#### **C. Install Dependencies**
+```bash
+# Upgrade pip
+python -m pip install --upgrade pip
+
+# Install requirements
+pip install -r requirements.txt
+```
+
+**requirements.txt:**
+```txt
+# GUI Framework
+PyQt5>=5.15.0
+PyQt5-Qt5>=5.15.0
+PyQt5-sip>=12.11.0
+
+# HTTP Client
+requests>=2.31.0
+websockets>=12.0
+
+# Image Processing
+opencv-python>=4.8.0
+Pillow>=10.0.0
+numpy>=1.24.0
+
+# Utilities
+pyyaml>=6.0
+```
+
+#### **D. Configure Connection**
+Edit `config.yaml`:
+```yaml
+robot:
+  ip: "10.0.0.65"
+  port: 5000
+  timeout: 5
+
+camera:
+  fps: 30
+  quality: 80
+  resolution: [1280, 720]
+
+ui:
+  theme: "VS Code Dark"
+  fullscreen: false
+```
+
+#### **E. Run Application**
+```bash
+# Make sure Raspberry Pi server is running first!
+python main.py
+```
+
+---
+
+## 📖 Usage
+
+### **Starting the System**
+
+1. **Power on the robot**
+   - Connect battery to Raspberry Pi
+   - Wait for boot (30-60 seconds)
+
+2. **Start the server** (on Raspberry Pi)
+   ```bash
+   ssh Richipi@10.0.0.65
+   cd ~/ai_robotSpiderApp/iSpiderPiRobot
+   source venv/bin/activate
+   uvicorn main:app --host 0.0.0.0 --port 5000
+   ```
+
+3. **Start the client** (on Windows)
+   ```bash
+   cd C:\...\ai_robotSpiderApp\iRobotSpiderAppver2
+   venv\Scripts\activate
+   python main.py
+   ```
+
+### **Controls**
+
+#### **Keyboard Controls:**
+| Key | Action |
+|-----|--------|
+| `W` | Move Forward |
+| `S` | Move Backward |
+| `A` | Turn Left |
+| `D` | Turn Right |
+| `Q` | Strafe Left |
+| `E` | Strafe Right |
+| `Space` | Stop |
+| `Shift` | Speed Boost |
+| `Ctrl` | Slow Mode |
+
+#### **GUI Buttons:**
+- **Movement:** Forward, Back, Left, Right, Stop
+- **Speed:** Slider (0-100%)
+- **Camera:** Pan, Tilt, Zoom
+- **Actions:** Stand, Sit, Wave, Dance
+- **Emergency:** Emergency Stop button
+
+### **Themes**
+
+Switch themes from the menu:
+- **View → Themes → [Select Theme]**
+
+Available themes:
+1. **VS Code Dark** - Professional dark theme
+2. **Dark Spider** - Classic black with purple accents
+3. **Toxic Spider** - Neon green on black
+4. **Halloween Spider** - Orange and black
+5. **Blood Spider** - Red and black
+6. **Caution Spider** - Yellow and black
+
+---
+
+## 📡 API Documentation
+
+### **Base URL:** `http://10.0.0.65:5000`
+
+### **Endpoints**
+
+#### **Health Check**
+```http
+GET /api/health
+```
+**Response:**
+```json
+{
+  "status": "ok",
+  "timestamp": "2025-01-06T21:24:00Z"
+}
+```
+
+#### **Move Robot**
+```http
+POST /api/move
+Content-Type: application/json
+
+{
+  "direction": "forward",
+  "speed": 50,
+  "duration": 1.0
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Moving forward at 50% speed"
+}
+```
+
+#### **Get Status**
+```http
+GET /api/status
+```
+**Response:**
+```json
+{
+  "battery": 85,
+  "servos": [
+    {"id": 0, "angle": 90, "status": "ok"},
+    ...
+  ],
+  "camera": {
+    "connected": true,
+    "fps": 30
+  }
+}
+```
+
+#### **Camera Stream**
+```http
+GET /api/camera/stream
+```
+Returns MJPEG stream
+
+#### **WebSocket Control**
+```
+WS /ws/control
+```
+Real-time bidirectional control
+
+**Full API Documentation:** `http://10.0.0.65:5000/docs` (Swagger UI)
+
+---
+
+## 🗺️ Roadmap
+
+### **Phase 1: Core Functionality** ✅
+- [x] Basic robot movement
+- [x] FastAPI server
+- [x] PyQt5 client
+- [x] Camera streaming
+- [x] 6 custom themes
+
+### **Phase 2: Enhanced Control** 🚧
+- [ ] Advanced movement patterns
+- [ ] Servo calibration UI
+- [ ] Battery monitoring
+- [ ] Error recovery
+- [ ] Logging system
+
+### **Phase 3: Computer Vision** 📋
+- [ ] Object detection (YOLO)
+- [ ] Face tracking
+- [ ] Line following
+- [ ] Obstacle avoidance
+- [ ] SLAM mapping
+
+### **Phase 4: Autonomy** 🔮
+- [ ] Path planning
+- [ ] Autonomous navigation
+- [ ] Task scheduling
+- [ ] Multi-robot coordination
+- [ ] Machine learning integration
+
+### **Phase 5: Cloud Integration** 🌐
+- [ ] Azure IoT Hub
+- [ ] Remote control via internet
+- [ ] Data analytics
+- [ ] OTA updates
+- [ ] Mobile app
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please follow these steps:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+### **Development Guidelines:**
+- Follow PEP 8 style guide
+- Add docstrings to all functions
+- Write unit tests for new features
+- Update documentation
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 📧 Contact
+
+**Project Maintainer:** [Your Name]
+
+- 📧 Email: your.email@example.com
+- 💼 LinkedIn: [Your LinkedIn](https://linkedin.com/in/yourprofile)
+- 🐙 GitHub: [@RichiebM3](https://github.com/RichiebM3)
+
+**Project Link:** [https://github.com/RichiebM3/ai_robotSpiderApp](https://github.com/RichiebM3/ai_robotSpiderApp)
+
+---
+
+## 🙏 Acknowledgments
+
+- **Freenove** - For the excellent hexapod robot kit and base code
+- **FastAPI** - For the amazing web framework
+- **PyQt5** - For the powerful GUI framework
+- **Raspberry Pi Foundation** - For the incredible hardware platform
+- **Adafruit** - For the servo control libraries
+
+---
+
+## 📸 Screenshots
+
+<div align="center">
+  <img src="docs/images/client_main.png" alt="Main Window" width="400">
+  <img src="docs/images/client_themes.png" alt="Theme Selector" width="400">
+  <br>
+  <img src="docs/images/robot_front.jpg" alt="Robot Front" width="400">
+  <img src="docs/images/robot_side.jpg" alt="Robot Side" width="400">
+</div>
+
+---
+
+## 🎥 Demo Videos
+
+- [Robot Walking Demo](https://youtube.com/...)
+- [Theme Showcase](https://youtube.com/...)
+- [Setup Tutorial](https://youtube.com/...)
+
+---
+
+<div align="center">
+  <p>Made with ❤️ and 🕷️</p>
+  <p>⭐️ Star this repo if you find it helpful!</p>
+  <p>🐛 Report bugs in the <a href="https://github.com/RichiebM3/ai_robotSpiderApp/issues">Issues</a> section</p>
+</div>
